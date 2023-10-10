@@ -1,35 +1,111 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, Button, Modal } from 'react-native';
+import { View, Text, FlatList, Button, TextInput } from 'react-native';
+import Papa from 'papaparse';
+import Modal from 'react-native-modal';
 
-const HomeScreen = () => {
-    const [stations, setStations] = useState([]);
+type Station = {
+    id: string;
+    type: string;
+    diva: string;
+    name: string;
+    gemeinde: string;
+    gemeindeId: string;
+    latitude: string;
+    longitude: string;
+    stand: string;
+};
+
+const HomeScreen: React.FC = () => {
+    const [stations, setStations] = useState<Station[]>([]);
     const [isModalVisible, setModalVisible] = useState(false);
+    const [newStation, setNewStation] = useState<Station>({
+        id: '',
+        type: '',
+        diva: '',
+        name: '',
+        gemeinde: '',
+        gemeindeId: '',
+        latitude: '',
+        longitude: '',
+        stand: '',
+    });
 
     useEffect(() => {
-        // Fetch and parse CSV data here
-        // Update the 'stations' state
+        Papa.parse(require('../assets/wienerlinien.csv'), {
+            delimiter: ';',
+            header: true,
+            newline: "\r\n",
+            complete: (result) => {
+                console.log(result);
+                // this just prints {data: Array(0), errors: Array(0), meta: {…}}
+                const parsedStations: Station[] = result.data.map((item: any) => ({
+                    id: item.HALTESTELLEN_ID,
+                    type: item.TYP,
+                    diva: item.DIVA,
+                    name: item.NAME,
+                    gemeinde: item.GEMEINDE,
+                    gemeindeId: item.GEMEINDE_ID,
+                    latitude: item.WGS84_LAT,
+                    longitude: item.WGS84_LON,
+                    stand: item.STAND,
+                }));
+                console.log(parsedStations);
+
+                setStations(parsedStations);
+            },
+        });
     }, []);
 
     const addStation = () => {
-        // Handle adding a station to the list
+        setModalVisible(true);
+    };
+
+    const saveNewStation = () => {
+        setStations([...stations, newStation]);
+
+        setModalVisible(false);
+        setNewStation({
+            id: '',
+            type: '',
+            diva: '',
+            name: '',
+            gemeinde: '',
+            gemeindeId: '',
+            latitude: '',
+            longitude: '',
+            stand: '',
+        });
     };
 
     return (
         <View>
             <Text>Home Screen</Text>
-            {/*<FlatList*/}
-            {/*    data={stations}*/}
-            {/*    keyExtractor={(item) => item.id.toString()}*/}
-            {/*    renderItem={({ item }) => (*/}
-            {/*        <View>*/}
-            {/*            <Text>{item.name}</Text>*/}
-            {/*        </View>*/}
-            {/*    )}*/}
-            {/*/>*/}
-            {/*<Button title="Add Station" onPress={() => setModalVisible(true)} />*/}
-            {/*<Modal visible={isModalVisible} animationType="slide">*/}
-            {/*    /!* Create a form for adding a station *!/*/}
-            {/*</Modal>*/}
+            <FlatList
+                data={stations}
+                keyExtractor={(item) => item.id}
+                renderItem={({ item }) => (
+                    <View>
+                        <Text>Name: {item.name}</Text>
+                        <Text>Type: {item.type}</Text>
+                        {/* Add more fields as needed */}
+                    </View>
+                )}
+            />
+            <Button title="Add Station" onPress={addStation} />
+
+            <Modal isVisible={isModalVisible}>
+                <View>
+                    <Text>Add New Station</Text>
+                    <TextInput
+                        placeholder="Station Name"
+                        value={newStation.name}
+                        onChangeText={(text) => setNewStation({ ...newStation, name: text })}
+                    />
+                    {/* Add inputs for other fields as needed */}
+                    <Button title="Save" onPress={saveNewStation} />
+                    <Button title="Cancel" onPress={() => setModalVisible(false)} />
+                </View>
+            </Modal>
         </View>
     );
 };
