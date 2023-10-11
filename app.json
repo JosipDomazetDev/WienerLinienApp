@@ -21,7 +21,13 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "permissions": [
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.FOREGROUND_SERVICE"
+      ],
+      "package": "com.josipdomazet.WienerLinienApp"
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -33,6 +39,12 @@
           "locationAlwaysAndWhenInUsePermission": "Allow WienerLinienApp to use your location."
         }
       ]
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "01a9c8a2-9014-4137-afc2-e191d3e3e60e"
+      }
+    },
+    "owner": "josipdomazet"
   }
 }
