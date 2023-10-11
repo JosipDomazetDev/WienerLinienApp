@@ -3,20 +3,10 @@ import { View, Text, FlatList, Button, TextInput } from 'react-native';
 import Papa from 'papaparse';
 import Modal from 'react-native-modal';
 
-type Station = {
-    id: string;
-    type: string;
-    diva: string;
-    name: string;
-    gemeinde: string;
-    gemeindeId: string;
-    latitude: string;
-    longitude: string;
-    stand: string;
-};
 
 const HomeScreen: React.FC = () => {
-    const [stations, setStations] = useState<Station[]>([]);
+    let stations: Station[], setStations: (value: (((prevState: Station[]) => Station[]) | Station[])) => void;
+    [stations, setStations] = useState<Station[]>([]);
     const [isModalVisible, setModalVisible] = useState(false);
     const [newStation, setNewStation] = useState<Station>({
         id: '',
@@ -31,29 +21,29 @@ const HomeScreen: React.FC = () => {
     });
 
     useEffect(() => {
-        Papa.parse(require('../assets/wienerlinien.csv'), {
-            delimiter: ';',
-            header: true,
-            newline: "\r\n",
-            complete: (result) => {
-                console.log(result);
-                // this just prints {data: Array(0), errors: Array(0), meta: {…}}
-                const parsedStations: Station[] = result.data.map((item: any) => ({
-                    id: item.HALTESTELLEN_ID,
-                    type: item.TYP,
-                    diva: item.DIVA,
-                    name: item.NAME,
-                    gemeinde: item.GEMEINDE,
-                    gemeindeId: item.GEMEINDE_ID,
-                    latitude: item.WGS84_LAT,
-                    longitude: item.WGS84_LON,
-                    stand: item.STAND,
-                }));
-                console.log(parsedStations);
-
-                setStations(parsedStations);
-            },
-        });
+        // Papa.parse(require('../assets/wienerlinien.csv'), {
+        //     delimiter: ';',
+        //     header: true,
+        //     newline: "\r\n",
+        //     complete: (result) => {
+        //         console.log(result);
+        //         // this just prints {data: Array(0), errors: Array(0), meta: {…}}
+        //         const parsedStations: Station[] = result.data.map((item: any) => ({
+        //             id: item.HALTESTELLEN_ID,
+        //             type: item.TYP,
+        //             diva: item.DIVA,
+        //             name: item.NAME,
+        //             gemeinde: item.GEMEINDE,
+        //             gemeindeId: item.GEMEINDE_ID,
+        //             latitude: item.WGS84_LAT,
+        //             longitude: item.WGS84_LON,
+        //             stand: item.STAND,
+        //         }));
+        //         console.log(parsedStations);
+        //
+        //         setStations(parsedStations);
+        //     },
+        // });
     }, []);
 
     const addStation = () => {

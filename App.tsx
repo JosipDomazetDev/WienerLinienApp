@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import {NavigationContainer} from '@react-navigation/native';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import HomeScreen from './screens/HomeScreen';
@@ -9,7 +9,15 @@ import {Ionicons} from '@expo/vector-icons'; // Import the icons
 
 const Tab = createBottomTabNavigator();
 
-export default function App() {
+const App = () => {
+    const [showMapNavbar, setShowMapNavbar] = useState(true);
+
+    useEffect(() => {
+        return () => {
+            setShowMapNavbar(true);
+        };
+    }, []);
+
     return (
         <NavigationContainer>
             <Tab.Navigator>
@@ -24,7 +32,7 @@ export default function App() {
                                 color={color}
                             />
                         ),
-                        tabBarShowLabel: false
+                        tabBarShowLabel: false,
                     }}
                 />
                 <Tab.Screen
@@ -38,7 +46,19 @@ export default function App() {
                                 color={color}
                             />
                         ),
-                        tabBarShowLabel: false
+                        tabBarShowLabel: false,
+                        headerShown: showMapNavbar,
+                    }}
+                    initialParams={{
+                        showMapNavbar: true,
+                    }}
+                    listeners={{
+                        focus: () => {
+                            setShowMapNavbar(false);
+                        },
+                        blur: () => {
+                            setShowMapNavbar(true);
+                        },
                     }}
                 />
                 <Tab.Screen
@@ -52,11 +72,11 @@ export default function App() {
                                 color={color}
                             />
                         ),
-                        tabBarShowLabel: false
+                        tabBarShowLabel: false,
                     }}
                 />
                 <Tab.Screen
-                    name="About2"
+                    name="About"
                     component={AboutScreen}
                     options={{
                         tabBarIcon: ({focused, color, size}) => (
@@ -66,10 +86,12 @@ export default function App() {
                                 color={color}
                             />
                         ),
-                        tabBarShowLabel: false
+                        tabBarShowLabel: false,
                     }}
                 />
             </Tab.Navigator>
         </NavigationContainer>
     );
-}
+};
+
+export default App;
