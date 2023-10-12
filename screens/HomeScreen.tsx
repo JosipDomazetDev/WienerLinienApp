@@ -1,12 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, Button, TextInput } from 'react-native';
+import React, {memo, useEffect, useState} from 'react';
+import {Button, FlatList, StyleSheet, Text, TextInput, View} from 'react-native';
+import {ListItem} from 'react-native-elements'
 import Papa from 'papaparse';
 import Modal from 'react-native-modal';
 
-
 const HomeScreen: React.FC = () => {
-    let stations: Station[], setStations: (value: (((prevState: Station[]) => Station[]) | Station[])) => void;
-    [stations, setStations] = useState<Station[]>([]);
+    const [stations, setStations] = useState<Station[]>([]);
     const [isModalVisible, setModalVisible] = useState(false);
     const [newStation, setNewStation] = useState<Station>({
         id: '',
@@ -21,29 +20,27 @@ const HomeScreen: React.FC = () => {
     });
 
     useEffect(() => {
-        // Papa.parse(require('../assets/wienerlinien.csv'), {
-        //     delimiter: ';',
-        //     header: true,
-        //     newline: "\r\n",
-        //     complete: (result) => {
-        //         console.log(result);
-        //         // this just prints {data: Array(0), errors: Array(0), meta: {…}}
-        //         const parsedStations: Station[] = result.data.map((item: any) => ({
-        //             id: item.HALTESTELLEN_ID,
-        //             type: item.TYP,
-        //             diva: item.DIVA,
-        //             name: item.NAME,
-        //             gemeinde: item.GEMEINDE,
-        //             gemeindeId: item.GEMEINDE_ID,
-        //             latitude: item.WGS84_LAT,
-        //             longitude: item.WGS84_LON,
-        //             stand: item.STAND,
-        //         }));
-        //         console.log(parsedStations);
-        //
-        //         setStations(parsedStations);
-        //     },
-        // });
+        Papa.parse("https://data.wien.gv.at/csv/wienerlinien-ogd-haltestellen.csv", {
+            download: true,
+            header: true,
+            delimiter: ";",
+            newline: "\r\n",
+            complete: (result) => {
+                const parsedStations: Station[] = result.data.map((item: any) => ({
+                    id: item.HALTESTELLEN_ID,
+                    type: item.TYP,
+                    diva: item.DIVA,
+                    name: item.NAME,
+                    gemeinde: item.GEMEINDE,
+                    gemeindeId: item.GEMEINDE_ID,
+                    latitude: item.WGS84_LAT,
+                    longitude: item.WGS84_LON,
+                    stand: item.STAND,
+                }));
+
+                setStations(parsedStations);
+            },
+        });
     }, []);
 
     const addStation = () => {
@@ -67,37 +64,97 @@ const HomeScreen: React.FC = () => {
         });
     };
 
+    const ListItemMemo = memo((item: any) => {
+        item = item.item;
+        return (
+            <ListItem bottomDivider key={item.id}>
+                <ListItem.Content>
+                    <ListItem.Title>{item.name}</ListItem.Title>
+                    <ListItem.Subtitle style={styles.subtitle}>Latitude: {item.latitude}</ListItem.Subtitle>
+                    <ListItem.Subtitle style={styles.subtitle}>Longitude: {item.longitude}</ListItem.Subtitle>
+                </ListItem.Content>
+                <ListItem.Chevron/>
+            </ListItem>
+        );
+    });
+
     return (
         <View>
-            <Text>Home Screen</Text>
+            <Button title="Add Station" onPress={addStation}/>
+
             <FlatList
                 data={stations}
+                renderItem={({item}) => <ListItemMemo item={item}/>}
                 keyExtractor={(item) => item.id}
-                renderItem={({ item }) => (
-                    <View>
-                        <Text>Name: {item.name}</Text>
-                        <Text>Type: {item.type}</Text>
-                        {/* Add more fields as needed */}
-                    </View>
-                )}
             />
-            <Button title="Add Station" onPress={addStation} />
 
-            <Modal isVisible={isModalVisible}>
-                <View>
-                    <Text>Add New Station</Text>
+            <Modal isVisible={isModalVisible} style={{backgroundColor: 'white'}}>
+                <View style={styles.modalContent}>
+                    <Text style={styles.modalTitle}>Add New Station</Text>
                     <TextInput
+                        style={styles.modalInput}
                         placeholder="Station Name"
                         value={newStation.name}
-                        onChangeText={(text) => setNewStation({ ...newStation, name: text })}
+                        onChangeText={(text) => setNewStation({...newStation, name: text})}
                     />
-                    {/* Add inputs for other fields as needed */}
-                    <Button title="Save" onPress={saveNewStation} />
-                    <Button title="Cancel" onPress={() => setModalVisible(false)} />
+                    <TextInput
+                        style={styles.modalInput}
+                        placeholder="Latitude"
+                        value={newStation.latitude}
+                        onChangeText={(text) => setNewStation({...newStation, latitude: text})}
+                        keyboardType="numeric"
+                    />
+                    <TextInput
+                        style={styles.modalInput}
+                        placeholder="Longitude"
+                        value={newStation.longitude}
+                        onChangeText={(text) => setNewStation({...newStation, longitude: text})}
+                        keyboardType="numeric"
+                    />
+                    <View style={{margin: 4}}/>
+                    <Button title="Save" onPress={saveNewStation}/>
+                    <View style={{margin: 4}}/>
+                    <Button title="Cancel" onPress={() => setModalVisible(false)}/>
                 </View>
             </Modal>
         </View>
     );
 };
+
+const styles = StyleSheet.create({
+    subtitle: {
+        color: '#818181',
+        fontSize: 11
+    },
+    card: {
+        backgroundColor: '#fff',
+        borderRadius: 4,
+        elevation: 2,
+    },
+    modalContent: {
+        backgroundColor: 'white',
+        padding:
+            20,
+    },
+    modalTitle: {
+        fontSize: 20,
+        fontWeight:
+            'bold',
+    },
+    modalInput: {
+        height: 40,
+        borderColor:
+            '#ccc',
+        borderWidth:
+            1,
+        padding:
+            10,
+        marginTop:
+            10,
+    },
+    modalButton: {
+        marginTop: 10,
+    },
+});
 
 export default HomeScreen;
