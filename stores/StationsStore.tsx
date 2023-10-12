@@ -9,13 +9,17 @@ class StationsStore {
     }
 
     async fetchStations() {
+        if (this.stations.length > 0) {
+            return;
+        }
+
         Papa.parse("https://data.wien.gv.at/csv/wienerlinien-ogd-haltestellen.csv", {
             download: true,
             header: true,
             delimiter: ";",
             newline: "\r\n",
             complete: (result) => {
-                const parsedStations: Station[] = result.data.map((item: any) => ({
+                let parsedStations: Station[] = result.data.map((item: any) => ({
                     id: item.HALTESTELLEN_ID,
                     type: item.TYP,
                     diva: item.DIVA,
@@ -26,6 +30,7 @@ class StationsStore {
                     longitude: item.WGS84_LON,
                     stand: item.STAND,
                 }));
+                parsedStations = parsedStations.filter((station) => station.id !== undefined && station.id !== '');
 
                 this.setStations(parsedStations);
             },
