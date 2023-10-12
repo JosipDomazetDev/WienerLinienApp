@@ -1,11 +1,11 @@
 import React, {memo, useEffect, useState} from 'react';
 import {Button, FlatList, StyleSheet, Text, TextInput, View} from 'react-native';
 import {ListItem} from 'react-native-elements'
-import Papa from 'papaparse';
+import { observer } from 'mobx-react-lite';
 import Modal from 'react-native-modal';
+import {stationsStore} from "../stores/StationsStore";
 
 const HomeScreen: React.FC = () => {
-    const [stations, setStations] = useState<Station[]>([]);
     const [isModalVisible, setModalVisible] = useState(false);
     const [newStation, setNewStation] = useState<Station>({
         id: '',
@@ -20,27 +20,7 @@ const HomeScreen: React.FC = () => {
     });
 
     useEffect(() => {
-        Papa.parse("https://data.wien.gv.at/csv/wienerlinien-ogd-haltestellen.csv", {
-            download: true,
-            header: true,
-            delimiter: ";",
-            newline: "\r\n",
-            complete: (result) => {
-                const parsedStations: Station[] = result.data.map((item: any) => ({
-                    id: item.HALTESTELLEN_ID,
-                    type: item.TYP,
-                    diva: item.DIVA,
-                    name: item.NAME,
-                    gemeinde: item.GEMEINDE,
-                    gemeindeId: item.GEMEINDE_ID,
-                    latitude: item.WGS84_LAT,
-                    longitude: item.WGS84_LON,
-                    stand: item.STAND,
-                }));
-
-                setStations(parsedStations);
-            },
-        });
+        stationsStore.fetchStations();
     }, []);
 
     const addStation = () => {
@@ -48,7 +28,7 @@ const HomeScreen: React.FC = () => {
     };
 
     const saveNewStation = () => {
-        setStations([...stations, newStation]);
+        stationsStore.addStation(newStation);
 
         setModalVisible(false);
         setNewStation({
@@ -83,7 +63,7 @@ const HomeScreen: React.FC = () => {
             <Button title="Add Station" onPress={addStation}/>
 
             <FlatList
-                data={stations}
+                data={stationsStore.getStations()}
                 renderItem={({item}) => <ListItemMemo item={item}/>}
                 keyExtractor={(item) => item.id}
             />
@@ -157,4 +137,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default HomeScreen;
+export default observer(HomeScreen);
